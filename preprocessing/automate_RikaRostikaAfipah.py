@@ -40,7 +40,7 @@ class HeartDiseasePreprocessor:
     
     def download_data(self, download_path='../heart_disease_raw/'):
         """Download data from UCI repository if not available locally"""
-        logger.info("🌐 Downloading data from UCI repository...")
+        logger.info("Downloading data from UCI repository...")
         
         # Create directory if it doesn't exist
         os.makedirs(download_path, exist_ok=True)
@@ -49,37 +49,37 @@ class HeartDiseasePreprocessor:
         
         try:
             urllib.request.urlretrieve(self.uci_url, download_file_path)
-            logger.info("✅ Data downloaded successfully to: %s", download_file_path)
+            logger.info("Data downloaded successfully to: %s", download_file_path)
             self.data_path = download_file_path
             return download_file_path
         except Exception as e:
-            logger.error("❌ Failed to download data: %s", e)
+            logger.error("Failed to download data: %s", e)
             raise
     
     def load_data(self):
         """Load and initial data inspection"""
-        logger.info("📥 Loading data from %s", self.data_path)
+        logger.info("Loading data from %s", self.data_path)
         
         try:
             # If data_path is not provided or file doesn't exist, download it
             if self.data_path is None or not os.path.exists(self.data_path):
-                logger.warning("📥 Local data file not found, downloading from UCI...")
+                logger.warning("Local data file not found, downloading from UCI...")
                 self.data_path = self.download_data()
             
             self.data = pd.read_csv(self.data_path, names=self.column_names, na_values='?')
-            logger.info("✅ Data loaded successfully. Shape: %s", self.data.shape)
+            logger.info("Data loaded successfully. Shape: %s", self.data.shape)
             
             # Basic info
-            logger.info("📊 Data columns: %s", list(self.data.columns))
-            logger.info("🎯 Target distribution: \n%s", self.data['target'].value_counts().sort_index())
+            logger.info("Data columns: %s", list(self.data.columns))
+            logger.info("Target distribution: \n%s", self.data['target'].value_counts().sort_index())
             
         except Exception as e:
-            logger.error("❌ Failed to load data: %s", e)
+            logger.error("Failed to load data: %s", e)
             raise
     
     def handle_missing_values(self):
         """Handle missing values in the dataset"""
-        logger.info("🔍 Handling missing values...")
+        logger.info("Handling missing values...")
         
         missing_before = self.data.isnull().sum()
         if missing_before.sum() > 0:
@@ -91,22 +91,22 @@ class HeartDiseasePreprocessor:
                 if col in self.data.columns and self.data[col].isnull().sum() > 0:
                     median_val = self.data[col].median()
                     self.data[col] = self.data[col].fillna(median_val)
-                    logger.info("✅ Filled missing values in %s with median: %s", col, median_val)
+                    logger.info("Filled missing values in %s with median: %s", col, median_val)
         else:
-            logger.info("✅ No missing values found")
+            logger.info("No missing values found")
     
     def remove_duplicates(self):
         """Remove duplicate rows"""
         duplicates = self.data.duplicated().sum()
-        logger.info("🔍 Found %s duplicate rows", duplicates)
+        logger.info("Found %s duplicate rows", duplicates)
         
         if duplicates > 0:
             self.data = self.data.drop_duplicates()
-            logger.info("✅ Removed duplicates. New shape: %s", self.data.shape)
+            logger.info("Removed duplicates. New shape: %s", self.data.shape)
     
     def create_heart_disease_target(self):
         """Convert multi-class target to binary classification"""
-        logger.info("🎯 Creating binary target variable...")
+        logger.info("Creating binary target variable...")
         
         # Convert to binary: 0 = no disease, >0 = disease
         self.data['heart_disease'] = (self.data['target'] > 0).astype(int)
@@ -114,7 +114,7 @@ class HeartDiseasePreprocessor:
     
     def feature_engineering(self):
         """Create new features from existing ones"""
-        logger.info("🔧 Performing feature engineering...")
+        logger.info("Performing feature engineering...")
         
         # Categorize age
         def categorize_age(age):
@@ -142,7 +142,7 @@ class HeartDiseasePreprocessor:
     
     def encode_categorical_features(self):
         """Encode categorical features"""
-        logger.info("🔤 Encoding categorical features...")
+        logger.info("Encoding categorical features...")
         
         categorical_cols = ['age_category', 'chol_category']
         label_encoders = {}
@@ -157,7 +157,7 @@ class HeartDiseasePreprocessor:
     
     def handle_outliers(self):
         """Handle outliers using IQR method"""
-        logger.info("📊 Handling outliers...")
+        logger.info("Handling outliers...")
         
         # Select numerical columns (excluding target)
         numerical_cols = self.data.select_dtypes(include=[np.number]).columns
@@ -180,19 +180,19 @@ class HeartDiseasePreprocessor:
     
     def prepare_final_data(self):
         """Prepare final dataset for modelling"""
-        logger.info("🔧 Preparing final dataset...")
+        logger.info("Preparing final dataset...")
         
         # Drop columns not needed for modelling
         columns_to_drop = ['target', 'age_category', 'chol_category']
         self.processed_data = self.data.drop(columns_to_drop, axis=1)
         
-        logger.info("✅ Final dataset shape: %s", self.processed_data.shape)
-        logger.info("🎯 Target variable: heart_disease")
-        logger.info("📈 Features: %s", list(self.processed_data.columns))
+        logger.info("Final dataset shape: %s", self.processed_data.shape)
+        logger.info("Target variable: heart_disease")
+        logger.info("Features: %s", list(self.processed_data.columns))
     
     def split_data(self, test_size=0.2, random_state=42):
         """Split data into training and testing sets"""
-        logger.info("📊 Splitting data into training and testing sets...")
+        logger.info("Splitting data into training and testing sets...")
         
         X = self.processed_data.drop('heart_disease', axis=1)
         y = self.processed_data['heart_disease']
@@ -210,17 +210,17 @@ class HeartDiseasePreprocessor:
     
     def save_processed_data(self, output_path):
         """Save processed data to file"""
-        logger.info("💾 Saving processed data to %s", output_path)
+        logger.info("Saving processed data to %s", output_path)
         
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         self.processed_data.to_csv(output_path, index=False)
-        logger.info("✅ Processed data saved successfully")
+        logger.info("Processed data saved successfully")
     
     def run_pipeline(self, output_path):
         """Run complete preprocessing pipeline"""
-        logger.info("🚀 Starting automated preprocessing pipeline...")
+        logger.info("Starting automated preprocessing pipeline...")
         
         try:
             # Step 1: Load data (will download if not available)
@@ -253,7 +253,7 @@ class HeartDiseasePreprocessor:
             # Step 10: Split data
             X_train, X_test, y_train, y_test = self.split_data()
             
-            logger.info("🎉 Preprocessing pipeline completed successfully!")
+            logger.info("Preprocessing pipeline completed successfully!")
             
             return {
                 'processed_data': self.processed_data,
@@ -265,7 +265,7 @@ class HeartDiseasePreprocessor:
             }
             
         except Exception as e:
-            logger.error("❌ Preprocessing pipeline failed: %s", e)
+            logger.error("Preprocessing pipeline failed: %s", e)
             raise
 
 def main():
@@ -281,16 +281,17 @@ def main():
     results = preprocessor.run_pipeline(OUTPUT_PATH)
     
     print("\n" + "="*50)
-    print("📋 PREPROCESSING SUMMARY")
+    print("PREPROCESSING SUMMARY")
     print("="*50)
-    print(f"✅ Raw data shape: {preprocessor.data.shape}")
-    print(f"✅ Processed data shape: {preprocessor.processed_data.shape}")
-    print(f"✅ Training set: {results['X_train'].shape}")
-    print(f"✅ Testing set: {results['X_test'].shape}")
-    print(f"✅ Output saved to: {OUTPUT_PATH}")
+    print(f"Raw data shape: {preprocessor.data.shape}")
+    print(f"Processed data shape: {preprocessor.processed_data.shape}")
+    print(f"Training set: {results['X_train'].shape}")
+    print(f"Testing set: {results['X_test'].shape}")
+    print(f"Output saved to: {OUTPUT_PATH}")
     print("="*50)
     
     return results
 
 if __name__ == "__main__":
+
     results = main()
